@@ -1,33 +1,20 @@
 import * as THREE from 'three';
+// Класс для работы с камерой
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 const scene = new THREE.Scene(); // создал сцену
 
 // Создаю источники света Light
 // Свет для всей сцены (создали и добавили на сцену) (похож на фильтр)
 // всегда указываем первым параметром цвет, вторым интенсивность света
-// const ambientLight = new THREE.AmbientLight('white', 0.1);
-// scene.add(ambientLight);
+const ambientLight = new THREE.AmbientLight('white', 0.1);
+scene.add(ambientLight);
 
 // direction light свет который похож по типу солнца (светит с одной стороны которую мы укажем позиционированием)
 // всегда указываем первым параметром цвет, вторым интенсивность света
-// const dirLight = new THREE.DirectionalLight('white', 1);
-// dirLight.position.set(5, 5, 5);
-// scene.add(dirLight);
-
-// point light похож на эффект фонаря (с одной точки, будет рассеивать свет)
-// всегда указываем первым параметром цвет, вторым интенсивность света и дистанцию третим
-// const pointLight = new THREE.PointLight('white', 10, 100);
-// pointLight.position.set(0.5, 1, 1);
-// scene.add(pointLight);
-
-// визуализация света (нужна только на стадии разработки) тестируем
-// const pointLightHelper = new THREE.PointLightHelper(pointLight, 0.2);
-// scene.add(pointLightHelper);
-
-// spot light освещает только в одну сторону, как фонарь, но не рассеивает
-const spotLight = new THREE.SpotLight('white', 1);
-spotLight.position.set(1, 1, 1);
-scene.add(spotLight);
+const dirLight = new THREE.DirectionalLight('white', 1);
+dirLight.position.set(5, 5, 5);
+scene.add(dirLight);
 
 // создал камеру
 const camera = new THREE.PerspectiveCamera(
@@ -45,6 +32,15 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 
 // добавил рендер на страницу
 document.body.appendChild(renderer.domElement);
+
+// Работа с камерой (указываю какую именно камеру и куда вывести)
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; // плавное замедление камеры
+controls.dampingFactor = 0.05; // указываем насколько булет плавное замедление
+controls.screenSpacePanning = false; // отключаем понормирование по экрану
+// минимальная и максимальная дистанция
+controls.minDistance = 2;
+controls.maxDistance = 10;
 
 const geometry = new THREE.BoxGeometry(); // создание заготовленого стандартного куба
 
@@ -67,6 +63,9 @@ function animate() {
   // при каждом перерендере меняет свою позицию для вращения
   cube.rotation.x += 0.01;
   cube.rotation.y += 0.01;
+
+  // обновляем положение камеры
+  controls.update();
 
   renderer.render(scene, camera);
 }
