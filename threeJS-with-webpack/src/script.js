@@ -4,10 +4,6 @@ import './style.css';
 // Создание сцены
 const scene = new THREE.Scene();
 
-// Создаём график осей координат и добавляем его на сцену
-const axesHelper = new THREE.AxesHelper(3);
-scene.add(axesHelper);
-
 // Создаю сам объект (фигуру)
 const geometry = new THREE.BoxGeometry(1, 1, 1); // размеры фигуры
 const material = new THREE.MeshBasicMaterial({
@@ -15,47 +11,9 @@ const material = new THREE.MeshBasicMaterial({
   wireframe: true, // прозрачность фигуры
 }); // материал фигуры (цвет, заливка)
 
-// Создаю группу
-const group = new THREE.Group();
+const mesh = new THREE.Mesh(geometry, material); // создаю сетку, объеденив всё в один
 
-group.scale.y = 1.4;
-group.rotation.x = Math.PI * 0.25;
-
-const cube1 = new THREE.Mesh(geometry, material);
-cube1.position.x = -1.2;
-
-const cube2 = new THREE.Mesh(geometry, material);
-cube2.position.x = 0;
-
-const cube3 = new THREE.Mesh(geometry, material);
-cube3.position.x = 1.2;
-
-group.add(cube1);
-group.add(cube2);
-group.add(cube3);
-
-scene.add(group);
-
-// const mesh = new THREE.Mesh(geometry, material); // создаю сетку, объеденив всё в один
-
-// Позиции для перемещения фигуры
-// mesh.position.x = -1;
-// mesh.position.y = -0.5;
-// mesh.position.z = 0.5;
-
-// Делаю масштабирование фигуры
-// mesh.scale.x = 0.5;
-// mesh.scale.y = 2;
-// mesh.scale.z = 0.7;
-
-// Добавляю вращение фигуры (происходит это в радианах)
-// mesh.rotation.x = Math.PI * 0.25;
-// mesh.rotation.y = Math.PI * 0.25;
-
-// Меняю очерёдность изменения осей
-// mesh.rotation.reorder('YXZ');
-
-// scene.add(mesh); // добавляю сетку на сцену
+scene.add(mesh); // добавляю сетку на сцену
 
 // Создаю камеру (то как будет показана сама сцена)
 const sizes = {
@@ -64,12 +22,9 @@ const sizes = {
 };
 
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height); // указываю угол обзора и размеры самой камеры
-camera.position.z = 5; // смещаем камеру по оси Z
-camera.position.y = 1.2;
+camera.position.z = 3; // смещаем камеру по оси Z
 
 scene.add(camera); // добавляю камеру на сцену
-
-// camera.lookAt(new THREE.Vector3(0, -1, 0));
 
 // Создаю отрисовщик сцены
 const canvas = document.querySelector('.canvas'); // достаю элемент на странице
@@ -80,3 +35,28 @@ renderer.setSize(sizes.width, sizes.height); // задаю размеры окн
 
 // Рендерим сцену
 renderer.render(scene, camera);
+
+// Работаю с анимацией
+
+const clock = new THREE.Clock();
+
+// функция tick будет рендериться на каждый фрейм анимации
+const tick = () => {
+  const elapsedTime = clock.getElapsedTime();
+
+  // Меняем вращение каждый раз при срабатывании фукнции tick
+  mesh.rotation.y = elapsedTime;
+  // Вращение вокруг своей оси
+  mesh.position.x = Math.cos(elapsedTime);
+  mesh.position.y = Math.sin(elapsedTime);
+
+  // Вращаею камеру относительно позиций
+  camera.lookAt(mesh.position);
+
+  // Рендерим после изменения координат вращения
+  renderer.render(scene, camera);
+
+  window.requestAnimationFrame(tick);
+};
+
+tick();
