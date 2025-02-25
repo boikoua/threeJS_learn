@@ -56,6 +56,34 @@ const cube = new THREE.Mesh(geometry, material); // собираю куб в о�
 cube.position.set(0, 0, 0); // двигаем куб по XYZ
 scene.add(cube); // добавляю куб на сцену
 
+const sphere = new THREE.Mesh(
+  new THREE.SphereGeometry(),
+  new THREE.MeshStandardMaterial({ color: 'green' })
+);
+sphere.position.x = 2;
+scene.add(sphere);
+
+// организовую взаимодействие с пользователем
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2(); // храним положение мыши в двумерном пространстве
+
+function onMouseClick(event) {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1; // получаем правильную координату мышки по оси Х
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1; // получаем правильную координату мышки по оси Y
+
+  raycaster.setFromCamera(mouse, camera);
+
+  // записываем все объекты по которым работало событие (там где было пересечение)
+  const intersects = raycaster.intersectObjects(scene.children);
+
+  if (intersects.length > 0) {
+    // первый элемент массива покрасим в синий
+    intersects[0].object.material.color.set('blue');
+  }
+}
+// вешаем событие на окно браузера
+window.addEventListener('mousemove', onMouseClick);
+
 // делаю функцию, которая будет постоянно рендерить мою фигуру на страницу
 function animate() {
   requestAnimationFrame(animate); // использую браузерную функцию для реакции на любой фрейм фигуры
