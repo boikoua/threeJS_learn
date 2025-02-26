@@ -49,48 +49,96 @@ const geometry = new THREE.BoxGeometry(); // создание заготовле
 //   color: 'red',
 // });
 
-// материал для куба, что бы работал свет общей сцены
-const material = new THREE.MeshStandardMaterial({ color: 'red' });
+// новые материалы для куда
+const originMaterial = new THREE.MeshStandardMaterial({ color: 'red' });
+const highlightMaterial = new THREE.MeshStandardMaterial({
+  color: 'yellow',
+  emissive: 'white',
+  emissiveIntensity: 0.5,
+});
 
-const cube = new THREE.Mesh(geometry, material); // собираю куб в один меш
+const cube = new THREE.Mesh(geometry, originMaterial); // собираю куб в один меш
 cube.position.set(0, 0, 0); // двигаем куб по XYZ
 scene.add(cube); // добавляю куб на сцену
 
-const sphere = new THREE.Mesh(
-  new THREE.SphereGeometry(),
-  new THREE.MeshStandardMaterial({ color: 'green' })
-);
-sphere.position.x = 2;
-scene.add(sphere);
+// GSAP Animation для куба (указываю для позиционирования, но можно и другие)
+// gsap.to(cube.position, {
+//   y: 2,
+//   x: 2,
+//   duration: 1,
+//   ease: 'power1.inOut',
+//   repeat: -1,
+//   yoyo: true,
+// });
+
+// END GSAP
 
 // организовую взаимодействие с пользователем
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2(); // храним положение мыши в двумерном пространстве
 
-function onMouseClick(event) {
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1; // получаем правильную координату мышки по оси Х
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1; // получаем правильную координату мышки по оси Y
+// function onMouseClick(event) {
+//   mouse.x = (event.clientX / window.innerWidth) * 2 - 1; // получаем правильную координату мышки по оси Х
+//   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1; // получаем правильную координату мышки по оси Y
 
-  raycaster.setFromCamera(mouse, camera);
+//   raycaster.setFromCamera(mouse, camera);
 
-  // записываем все объекты по которым работало событие (там где было пересечение)
-  const intersects = raycaster.intersectObjects(scene.children);
+//   // записываем все объекты по которым работало событие (там где было пересечение)
+//   const intersects = raycaster.intersectObjects(scene.children);
 
-  if (intersects.length > 0) {
-    // первый элемент массива покрасим в синий
-    intersects[0].object.material.color.set('blue');
-  }
+//   if (intersects.length > 0) {
+//     // первый элемент массива покрасим в синий
+//     intersects[0].object.material.color.set('blue');
+//   }
+// }
+// // вешаем событие на окно браузера
+// window.addEventListener('mousemove', onMouseClick);
+
+function onMouseMove(event) {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 }
-// вешаем событие на окно браузера
-window.addEventListener('mousemove', onMouseClick);
+
+window.addEventListener('mousemove', onMouseMove);
+
+let isHovered = false;
 
 // делаю функцию, которая будет постоянно рендерить мою фигуру на страницу
 function animate() {
   requestAnimationFrame(animate); // использую браузерную функцию для реакции на любой фрейм фигуры
 
   // при каждом перерендере меняет свою позицию для вращения
-  cube.rotation.x += 0.01;
-  cube.rotation.y += 0.01;
+  // cube.rotation.x += 0.01;
+  // cube.rotation.y += 0.01;
+
+  raycaster.setFromCamera(mouse, camera);
+
+  const intersects = raycaster.intersectObject(cube);
+
+  // если было пересечиние с объектом, то делаем действия в блоке кода
+  if (intersects.length > 0 && !isHovered) {
+    cube.material = highlightMaterial;
+    isHovered = true;
+
+    gsap.to(cube.scale, {
+      x: 1.5,
+      y: 1.5,
+      z: 1.5,
+      duration: 1.5,
+      ease: 'power1.out',
+    });
+  } else if (intersects.length === 0 && isHovered) {
+    cube.material = originMaterial;
+    isHovered = false;
+
+    gsap.to(cube.scale, {
+      x: 1,
+      y: 1,
+      z: 1,
+      duration: 1.5,
+      ease: 'power1.out',
+    });
+  }
 
   // обновляем положение камеры
   controls.update();
