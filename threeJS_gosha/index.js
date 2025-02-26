@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 // Класс для работы с камерой
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+// Класс для работы с 3Д моделями
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 const scene = new THREE.Scene(); // создал сцену
 
@@ -59,7 +61,27 @@ const highlightMaterial = new THREE.MeshStandardMaterial({
 
 const cube = new THREE.Mesh(geometry, originMaterial); // собираю куб в один меш
 cube.position.set(0, 0, 0); // двигаем куб по XYZ
-scene.add(cube); // добавляю куб на сцену
+// scene.add(cube); // добавляю куб на сцену
+
+// делаем загрузку модели
+const loader = new GLTFLoader();
+// прописываем параметры подгрузки модели
+loader.load(
+  'models/abandoned_snow_carraw/scene.gltf',
+  (gltf) => {
+    const model = gltf.scene;
+    model.scale.set(1, 1, 1);
+    model.position.set(1, 1, 1);
+    scene.add(model);
+  },
+  (xhr) => {
+    // процент загрузки объекта
+    console.log((xhr.loaded / xhr.total) * 100 + '%  loaded');
+  },
+  (error) => {
+    console.log('Error: ' + error);
+  }
+);
 
 // GSAP Animation для куба (указываю для позиционирования, но можно и другие)
 // gsap.to(cube.position, {
@@ -142,7 +164,7 @@ function animate() {
 
   // обновляем положение камеры
   controls.update();
-
+  renderer.setClearColor('lightblue');
   renderer.render(scene, camera);
 }
 
