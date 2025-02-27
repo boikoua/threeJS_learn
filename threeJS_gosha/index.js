@@ -4,12 +4,16 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 // Класс для работы с 3Д моделями
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+
 const scene = new THREE.Scene(); // создал сцену
 
 // Создаю источники света Light
 // Свет для всей сцены (создали и добавили на сцену) (похож на фильтр)
 // всегда указываем первым параметром цвет, вторым интенсивность света
-const ambientLight = new THREE.AmbientLight('white', 0.1);
+const ambientLight = new THREE.AmbientLight('white', 0.5);
 scene.add(ambientLight);
 
 // direction light свет который похож по типу солнца (светит с одной стороны которую мы укажем позиционированием)
@@ -34,6 +38,20 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 
 // добавил рендер на страницу
 document.body.appendChild(renderer.domElement);
+
+// Post Process
+
+const renderPass = new RenderPass(scene, camera);
+const bloomPass = new UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  1.5,
+  0.4,
+  0.85
+);
+
+const composer = new EffectComposer(renderer);
+composer.addPass(renderPass);
+composer.addPass(bloomPass);
 
 // Работа с камерой (указываю какую именно камеру и куда вывести)
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -67,7 +85,7 @@ cube.position.set(0, 0, 0); // двигаем куб по XYZ
 const loader = new GLTFLoader();
 // прописываем параметры подгрузки модели
 loader.load(
-  'models/abandoned_snow_carraw/scene.gltf',
+  'models/police_car/scene.gltf',
   (gltf) => {
     const model = gltf.scene;
     model.scale.set(1, 1, 1);
@@ -165,7 +183,8 @@ function animate() {
   // обновляем положение камеры
   controls.update();
   renderer.setClearColor('lightblue');
-  renderer.render(scene, camera);
+  // renderer.render(scene, camera);
+  composer.render(); // рендерим через composer
 }
 
 animate();
